@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AI 工具入口網站</title>
+  <meta name="description" content="快速進入各大熱門 AI / LLM 工具的簡易入口導航。" />
+  <style>
+    :root {
+      --bg: #0f1115;
+      --bg-alt:#181b21;
+      --card:#20252d;
+      --card-hover:#2a313b;
+      --border:#323b47;
+      --text:#e8ecf2;
+      --accent:#4da3ff;
+      --radius:14px;
+      --trans:.22s cubic-bezier(.4,.2,.2,1);
+    }
+    .light { --bg:#f5f7fa; --bg-alt:#eef2f6; --card:#ffffff; --card-hover:#f0f5fa; --border:#d9e2ec; --text:#1f2732; --accent:#0066dd; }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family: system-ui,-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans TC', 'Helvetica Neue', Arial, sans-serif; background:var(--bg); color:var(--text); -webkit-font-smoothing:antialiased; }
+    header { padding:32px 28px 8px; max-width:1180px; margin:0 auto; display:flex; flex-wrap:wrap; gap:18px; align-items:flex-end; }
+    h1 { margin:0; font-size:clamp(1.8rem,2.6vw,2.6rem); letter-spacing:.5px; background:linear-gradient(92deg,var(--accent),#9f7bff 55%,#ff9f5a); -webkit-background-clip:text; color:transparent; }
+    .desc { margin:4px 0 0; font-size:.95rem; opacity:.78; }
+    .actions { margin-left:auto; display:flex; gap:10px; }
+    button, .filter { background:var(--card); color:var(--text); border:1px solid var(--border); padding:10px 16px; border-radius:var(--radius); cursor:pointer; font:600 .85rem/1 system-ui; letter-spacing:.5px; display:inline-flex; align-items:center; gap:6px; transition:var(--trans); }
+    button:hover, .filter:hover { background:var(--card-hover); }
+    button:active { transform:translateY(1px); }
+    #grid { padding:20px 28px 60px; max-width:1180px; margin:0 auto; display:grid; gap:22px; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); }
+    .card { position:relative; background:var(--card); border:1px solid var(--border); padding:18px 16px 60px; border-radius:var(--radius); text-decoration:none; color:inherit; overflow:hidden; isolation:isolate; display:flex; flex-direction:column; gap:10px; min-height:180px; transition:var(--trans); }
+    .card:hover { background:var(--card-hover); border-color:var(--accent); box-shadow:0 4px 14px -4px rgba(0,0,0,.55), 0 0 0 1px var(--accent) inset; }
+    .card h2 { margin:0; font-size:1.05rem; display:flex; align-items:center; gap:6px; }
+    .tagline { font-size:.72rem; letter-spacing:.5px; font-weight:600; padding:4px 8px; background:rgba(255,255,255,.06); border:1px solid var(--border); border-radius:40px; position:absolute; right:10px; top:10px; backdrop-filter:blur(6px); }
+    .about { font-size:.78rem; line-height:1.35; opacity:.78; flex:1; }
+    .go { position:absolute; left:0; right:0; bottom:0; padding:10px 14px 14px; font-size:.72rem; letter-spacing:.6px; font-weight:600; text-transform:uppercase; display:flex; justify-content:space-between; align-items:center; background:linear-gradient(180deg,rgba(0,0,0,0) 0%,rgba(0,0,0,.35) 70%); }
+    .badge-new { background:linear-gradient(92deg,#ff7b39,#ffb347); color:#fff; }
+    .search-wrap { position:relative; flex:1 1 240px; }
+    #search { width:100%; padding:12px 40px 12px 14px; border-radius:var(--radius); background:var(--card); border:1px solid var(--border); color:var(--text); font-size:.9rem; outline:none; transition:var(--trans); }
+    #search:focus { border-color:var(--accent); box-shadow:0 0 0 3px rgba(77,163,255,.25); }
+    .search-wrap svg { position:absolute; right:14px; top:50%; transform:translateY(-50%); width:18px; opacity:.6; }
+    footer { max-width:1180px; margin:0 auto; padding:24px 32px 80px; opacity:.55; font-size:.7rem; line-height:1.4; }
+    .empty { grid-column:1/-1; text-align:center; padding:80px 20px; opacity:.5; }
+    #ranking { background:var(--bg-alt); border-top:1px solid var(--border); }
+    #ranking .ranking-inner { max-width:1180px; margin:0 auto; padding:30px 32px 70px; }
+    #ranking h2 { margin:0 0 10px; font-size:1.35rem; }
+    .rk-note { font-size:.75rem; opacity:.7; margin:0 0 6px; }
+    .rk-list { margin:14px 0 14px 1.2em; padding:0; list-style:decimal; display:grid; gap:6px; }
+    .rk-list li { background:var(--card); border:1px solid var(--border); border-radius:8px; padding:8px 12px; font-size:.83rem; line-height:1.3; display:flex; justify-content:space-between; align-items:center; gap:12px; }
+    .rk-list li a { color:var(--accent); text-decoration:none; font-weight:600; }
+    .rk-list li a:hover { text-decoration:underline; }
+    .rk-sources { margin:4px 0 0; padding:0; list-style:none; display:flex; flex-wrap:wrap; gap:6px; }
+    .rk-sources li { font-size:.62rem; background:var(--card); border:1px solid var(--border); padding:4px 8px; border-radius:40px; }
+    .rk-sources a { color:var(--accent); text-decoration:none; }
+    .rk-update { font-size:.6rem; opacity:.5; margin:4px 0 0; }
+    @media (max-width:680px){ header { padding:26px 20px 4px; } #grid { padding:10px 20px 60px; } #ranking .ranking-inner { padding:26px 20px 70px; } }
+  </style>
+</head>
+<body>
+  <header>
+    <div style="flex:1 1 100%; min-width:260px;">
+      <h1>AI 工具入口</h1>
+      <p class="desc">聚合常用 / 新興 AI 與搜尋增強工具，一站式快速進入。</p>
+    </div>
+    <div class="search-wrap">
+      <input id="search" placeholder="搜尋 / 過濾關鍵字 (中英文、工具名稱、功能)..." aria-label="搜尋工具" />
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    </div>
+    <div class="actions">
+      <button id="toggleTheme" title="切換主題">🌗 主題</button>
+      <button id="reset" title="重置過濾">♻ 重置</button>
+    </div>
+  </header>
+
+  <main id="grid" aria-live="polite"></main>
+
+  <section id="ranking" aria-labelledby="rk-title">
+    <div class="ranking-inner">
+      <h2 id="rk-title">每日 AI 熱門工具（非即時示例）</h2>
+      <p class="rk-note">下列排行為示範：依據 Product Hunt、AI Hunter、Futurepedia、There's An AI For That 等聚合站常見新關注度與 Twitter/X 討論熱度綜合手動摘錄。可改為串 API 自動更新。</p>
+      <ol class="rk-list" id="rkList"></ol>
+      <ul class="rk-sources">
+        <li>來源示例：</li>
+        <li><a href="https://www.producthunt.com/" target="_blank" rel="noopener">Product Hunt</a></li>
+        <li><a href="https://theresanaiforthat.com/" target="_blank" rel="noopener">There's An AI For That</a></li>
+        <li><a href="https://www.futurepedia.io/" target="_blank" rel="noopener">Futurepedia</a></li>
+        <li><a href="https://aihunter.io/" target="_blank" rel="noopener">AI Hunter</a></li>
+      </ul>
+      <p class="rk-update" id="rkUpdate"></p>
+    </div>
+  </section>
+
+  <footer>
+    提示：部分工具的官方網址可能會調整，若有失效請自行在卡片右鍵編輯或更新。您也可以直接修改 index.html 中的 data 物件。<br />
+    製作：快速示範版，可自行擴充登入聚合、標籤分類、使用統計、書籤同步等功能。
+  </footer>
+
+  <script>
+    const tools = [
+      {
+        name: 'Skywork',
+        url: 'https://www.skywork.ai/',
+        tagline: '多模態 / 團隊協作',
+        about: 'Skywork 提供文本、圖像等多模態 AI 生成與協作功能。',
+        tags: 'llm multimodal collaboration'
+      },
+      {
+        name: 'Perplexity',
+        url: 'https://www.perplexity.ai/',
+        tagline: '搜尋 + 推理',
+        about: '類搜尋體驗的 AI 問答與研究助手，支援即時網頁來源引用。',
+        tags: 'search rag research cite'
+      },
+      {
+        name: 'Gemini',
+        url: 'https://gemini.google.com/app',
+        tagline: 'Google 生態',
+        about: 'Google 提供的多模態大型模型系列，整合文字、圖片與程式功能。',
+        tags: 'google multimodal'
+      },
+      {
+        name: 'Grok (xAI)',
+        url: 'https://x.ai/',
+        tagline: '即時 / X 整合',
+        about: 'xAI 推出的模型，強調即時資料與開放對話風格。',
+        tags: 'realtime xai'
+      },
+      {
+        name: 'Claude',
+        url: 'https://claude.ai/',
+        tagline: '長上下文',
+        about: 'Anthropic 模型，擅長長上下文推理、指令與協作寫作。',
+        tags: 'anthropic long-context'
+      },
+      {
+        name: 'Devv',
+        url: 'https://devv.ai/',
+        tagline: '開發輔助',
+        about: '（若網址有誤可自行調整）面向開發者的 AI 助手 / 平台。',
+        tags: 'dev code'
+      },
+      {
+        name: 'Mercury',
+        url: 'https://mercury.com/ai',
+        tagline: '效率 / 商務',
+        about: '（占位）Mercury 相關 AI 功能或擴展，可依實際需求更改。',
+        tags: 'business placeholder'
+      },
+      {
+        name: 'DeepSeek',
+        url: 'https://www.deepseek.com/',
+        tagline: '推理 / 性價比',
+        about: '專注高效推理與開源友善度的中文 / 英文大型模型。',
+        tags: 'reasoning chinese'
+      },
+      {
+        name: 'Kimi',
+        url: 'https://kimi.moonshot.cn/',
+        tagline: '長文處理',
+        about: 'Moonshot AI 推出的中文長文本與知識檢索增強助手。',
+        tags: 'chinese long-context rag'
+      },
+      {
+        name: 'K2 (占位)',
+        url: '#',
+        tagline: '占位條目',
+        about: '您提到的 _k2（暫未確定官方頁），請替換為正確網址或描述。',
+        tags: 'placeholder'
+      },
+      {
+        name: 'Qwen 通義千問',
+        url: 'https://chat.qwen.ai/',
+        tagline: '阿里系',
+        about: '阿里巴巴通義千問家族模型，涵蓋多語與工具調用能力。',
+        tags: 'alibaba chinese tools'
+      },
+      {
+        name: 'Felo Search',
+        url: 'https://felo.ai/',
+        tagline: 'AI 搜尋',
+        about: 'AI 增強的即時搜尋與回答體驗。',
+        tags: 'search real-time'
+      },
+      {
+        name: 'Z.ai',
+        url: 'https://z.ai/',
+        tagline: '聊天 / 助手',
+        about: '（占位）Z.ai 多模態 / 對話助手，請確認實際定位後可更新。',
+        tags: 'assistant placeholder'
+      },
+      {
+        name: 'Manus',
+        url: 'https://www.manus.ai/',
+        tagline: '（占位）',
+        about: '您列出的 manus，若有特定產品（如 AI 寫作 / 研發），可調整描述。',
+        tags: 'placeholder'
+      }
+    ];
+
+    const grid = document.getElementById('grid');
+    const search = document.getElementById('search');
+
+    function render(list){
+      grid.innerHTML = '';
+      if(!list.length){
+        grid.innerHTML = '<div class="empty">⚠ 沒有符合條件的工具，可嘗試其他關鍵字。</div>';
+        return;
+      }
+      list.forEach(t => {
+        const a = document.createElement('a');
+        a.className = 'card';
+        a.href = t.url; a.target = '_blank'; a.rel = 'noopener noreferrer';
+        a.innerHTML = `
+          <span class="tagline">${t.tagline || ''}</span>
+          <h2>${t.name}</h2>
+          <p class="about">${t.about || ''}</p>
+          <div class="go">前往 <span style="opacity:.6">↗</span></div>`;
+        grid.appendChild(a);
+      });
+    }
+
+    function filter(){
+      const q = search.value.trim().toLowerCase();
+      if(!q) { render(tools); return; }
+      const words = q.split(/\s+/).filter(Boolean);
+      const res = tools.filter(t => {
+        const blob = (t.name + ' ' + t.about + ' ' + t.tagline + ' ' + t.tags).toLowerCase();
+        return words.every(w => blob.includes(w));
+      });
+      render(res);
+    }
+
+    search.addEventListener('input', filter);
+
+    document.getElementById('reset').addEventListener('click', () => { search.value=''; filter(); });
+
+    // Theme toggle
+    const root = document.documentElement;
+    const savedTheme = localStorage.getItem('aiPortalTheme');
+    if(savedTheme==='light') root.classList.add('light');
+    document.getElementById('toggleTheme').addEventListener('click', () => {
+      root.classList.toggle('light');
+      localStorage.setItem('aiPortalTheme', root.classList.contains('light') ? 'light' : 'dark');
+    });
+
+    // 初次載入
+    render(tools);
+
+    // ===== 簡易模擬每日排行資料（可改為 fetch 後端或第三方 API） =====
+    const rankingSamples = [
+      { name:'Perplexity', reason:'即時搜尋與引用來源功能討論增加', url:'https://www.perplexity.ai/' },
+      { name:'Claude', reason:'長上下文與最新模型升級話題', url:'https://claude.ai/' },
+      { name:'Gemini', reason:'多模態示例與新功能測試版釋出', url:'https://gemini.google.com/app' },
+      { name:'Qwen 通義千問', reason:'中文生成品質與工具調用案例擴散', url:'https://chat.qwen.ai/' },
+      { name:'DeepSeek', reason:'推理 / 開放策略與成本優勢被轉貼', url:'https://www.deepseek.com/' },
+      { name:'Kimi', reason:'長文本閱讀與知識問答示例受關注', url:'https://kimi.moonshot.cn/' },
+      { name:'Skywork', reason:'多模態協作演示影片流傳', url:'https://www.skywork.ai/' },
+      { name:'Felo Search', reason:'AI 即時搜尋對比傳統搜尋討論', url:'https://felo.ai/' },
+      { name:'Grok (xAI)', reason:'X 平台整合更新與即時資料測試', url:'https://x.ai/' },
+      { name:'Z.ai', reason:'新上線 / 介面試用分享（示例）', url:'https://z.ai/' }
+    ];
+
+    function renderRanking(){
+      const listEl = document.getElementById('rkList');
+      listEl.innerHTML = '';
+      rankingSamples.forEach((item,i) => {
+        const li = document.createElement('li');
+        li.innerHTML = `<span style="flex:1 1 auto; min-width:0;">${i+1}. <a href="${item.url}" target="_blank" rel="noopener">${item.name}</a></span><span style="opacity:.65; font-size:.68rem;">${item.reason}</span>`;
+        listEl.appendChild(li);
+      });
+      const d = new Date();
+      const stamp = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+      document.getElementById('rkUpdate').textContent = `更新時間（示例）：${stamp} ｜ 說明：此區塊為靜態假資料。要自動化請串接後端排程抓取聚合站或社交媒體指標。`;
+    }
+
+    renderRanking();
+  </script>
+</body>
+</html>
