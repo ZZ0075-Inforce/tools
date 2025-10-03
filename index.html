@@ -76,15 +76,15 @@
 
   <section id="ranking" aria-labelledby="rk-title">
     <div class="ranking-inner">
-      <h2 id="rk-title">每日 AI 熱門工具（非即時示例）</h2>
-      <p class="rk-note">下列排行為示範：依據 Product Hunt、AI Hunter、Futurepedia、There's An AI For That 等聚合站常見新關注度與 Twitter/X 討論熱度綜合手動摘錄。可改為串 API 自動更新。</p>
-      <ol class="rk-list" id="rkList"></ol>
+      <h2 id="rk-title">每日 AI 熱門工具</h2>
+      <p class="rk-note">此區目前無假資料。可串接後端 / API 自動生成排行，例如依據第三方流量、投票、社群分享數或你自己的使用統計。</p>
+      <ol class="rk-list" id="rkList"><li style="justify-content:center; font-size:.7rem; opacity:.6; list-style:none;">（尚未載入任何排行資料）</li></ol>
       <ul class="rk-sources">
-        <li>來源示例：</li>
-        <li><a href="https://www.producthunt.com/" target="_blank" rel="noopener">Product Hunt</a></li>
-        <li><a href="https://theresanaiforthat.com/" target="_blank" rel="noopener">There's An AI For That</a></li>
-        <li><a href="https://www.futurepedia.io/" target="_blank" rel="noopener">Futurepedia</a></li>
-        <li><a href="https://aihunter.io/" target="_blank" rel="noopener">AI Hunter</a></li>
+        <li>來源建議：</li>
+        <li><a href="https://www.producthunt.com/">Product Hunt</a></li>
+        <li><a href="https://theresanaiforthat.com/">There's An AI For That</a></li>
+        <li><a href="https://www.futurepedia.io/">Futurepedia</a></li>
+        <li><a href="https://aihunter.io/">AI Hunter</a></li>
       </ul>
       <p class="rk-update" id="rkUpdate"></p>
     </div>
@@ -209,12 +209,12 @@
       list.forEach(t => {
         const a = document.createElement('a');
         a.className = 'card';
-        a.href = t.url; a.target = '_blank'; a.rel = 'noopener noreferrer';
+        a.href = t.url; // 同頁導向，不再新分頁
         a.innerHTML = `
           <span class="tagline">${t.tagline || ''}</span>
           <h2>${t.name}</h2>
           <p class="about">${t.about || ''}</p>
-          <div class="go">前往 <span style="opacity:.6">↗</span></div>`;
+          <div class="go">前往</div>`;
         grid.appendChild(a);
       });
     }
@@ -246,33 +246,13 @@
     // 初次載入
     render(tools);
 
-    // ===== 簡易模擬每日排行資料（可改為 fetch 後端或第三方 API） =====
-    const rankingSamples = [
-      { name:'Perplexity', reason:'即時搜尋與引用來源功能討論增加', url:'https://www.perplexity.ai/' },
-      { name:'Claude', reason:'長上下文與最新模型升級話題', url:'https://claude.ai/' },
-      { name:'Gemini', reason:'多模態示例與新功能測試版釋出', url:'https://gemini.google.com/app' },
-      { name:'Qwen 通義千問', reason:'中文生成品質與工具調用案例擴散', url:'https://chat.qwen.ai/' },
-      { name:'DeepSeek', reason:'推理 / 開放策略與成本優勢被轉貼', url:'https://www.deepseek.com/' },
-      { name:'Kimi', reason:'長文本閱讀與知識問答示例受關注', url:'https://kimi.moonshot.cn/' },
-      { name:'Skywork', reason:'多模態協作演示影片流傳', url:'https://www.skywork.ai/' },
-      { name:'Felo Search', reason:'AI 即時搜尋對比傳統搜尋討論', url:'https://felo.ai/' },
-      { name:'Grok (xAI)', reason:'X 平台整合更新與即時資料測試', url:'https://x.ai/' },
-      { name:'Z.ai', reason:'新上線 / 介面試用分享（示例）', url:'https://z.ai/' }
-    ];
-
-    function renderRanking(){
+    // 排行資料：目前留空（無假資料）。可在此 fetch 後端 API。
+    async function renderRanking(){
       const listEl = document.getElementById('rkList');
-      listEl.innerHTML = '';
-      rankingSamples.forEach((item,i) => {
-        const li = document.createElement('li');
-        li.innerHTML = `<span style="flex:1 1 auto; min-width:0;">${i+1}. <a href="${item.url}" target="_blank" rel="noopener">${item.name}</a></span><span style="opacity:.65; font-size:.68rem;">${item.reason}</span>`;
-        listEl.appendChild(li);
-      });
-      const d = new Date();
-      const stamp = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
-      document.getElementById('rkUpdate').textContent = `更新時間（示例）：${stamp} ｜ 說明：此區塊為靜態假資料。要自動化請串接後端排程抓取聚合站或社交媒體指標。`;
+      const updateEl = document.getElementById('rkUpdate');
+      listEl.innerHTML = '<li style="list-style:none; font-size:.68rem; opacity:.55; text-align:center;">目前沒有可顯示的排行資料</li>';
+      updateEl.textContent = '尚未接入資料來源。';
     }
-
     renderRanking();
   </script>
 </body>
