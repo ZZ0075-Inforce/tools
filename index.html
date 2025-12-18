@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>AI 工具入口網站</title>
+  <title>薪水小偷</title>
   <link rel="icon" type="image/svg+xml"
     href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCA2NCA2NCc+PHJlY3Qgd2lkdGg9JzY0JyBoZWlnaHQ9JzY0JyByeD0nMTQnIGZpbGw9JyMwZjExMTUnLz48dGV4dCB4PSc1MCUnIHk9JzUwJScgZm9udC1mYW1pbHk9J3N5c3RlbS11aSxBcmlhbCcgc3Ryb2tlPScjNGQhJyBmb250LXNpemU9JzI0JyBmb250LXdlaWdodD0nNjAwJyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyBkb21pbmFudC1iYXNlbGluZT0nY2VudHJhbCcgZmlsbD0nI2U4ZWNmMic+QUk8L3RleHQ+PC9zdmc+" />
   <meta name="description" content="快速進入各大熱門 AI / LLM 工具的簡易入口導航。" />
@@ -123,12 +123,19 @@
       gap: 8px;
       min-height: 140px;
       transition: var(--trans);
+      outline: none;
     }
 
-    .card:hover {
+    .card:hover, .card.selected {
       background: var(--card-hover);
       border-color: var(--accent);
       box-shadow: 0 4px 14px -4px rgba(0, 0, 0, .55), 0 0 0 1px var(--accent) inset;
+    }
+
+    .card.selected {
+      box-shadow: 0 8px 20px -6px rgba(0, 0, 0, .6), 0 0 0 2px var(--accent) inset;
+      transform: translateY(-2px);
+      z-index: 2;
     }
 
     .card h2 {
@@ -316,7 +323,7 @@
 <body>
   <header>
     <div style="flex:1 1 100%; min-width:260px;">
-      <h1>AI 工具入口</h1>
+      <h1>薪水小偷</h1>
       <p class="desc">工具</p>
     </div>
     <div class="search-wrap">
@@ -469,17 +476,20 @@
 
     const grid = document.getElementById('grid');
     const search = document.getElementById('search');
+    let selectedIndex = -1;
 
     function render(list) {
       grid.innerHTML = '';
+      selectedIndex = -1; // Reset selection on render
       if (!list.length) {
         grid.innerHTML = '<div class="empty">⚠ 沒有符合條件的工具，可嘗試其他關鍵字。</div>';
         return;
       }
-      list.forEach(t => {
+      list.forEach((t, idx) => {
         const a = document.createElement('a');
         a.className = 'card';
         a.href = t.url; // 同頁導向
+        a.dataset.index = idx;
         const iconMap = {
           'Notion' : 'data:image/png+xml;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAIAAAD8GO2jAAADs0lEQVR4nLWWz0syQRjHZ8s0tbAisIIiasFICaSwMMlLB7tERIRduknhofRSYRAUhFTHOkQECV2iSwT9Af2C6Mcl0VOlFURRbrursSarzktNbZNur+Xb+znIM88zzneeeWZmh4AQgv+JJN3F8/z9/T31TigUwm2aph8eHiiKomkaAKBSqQYGBqampmQymbgChNDv9/f09Oj1+qqqKqVSmWFGEklpaSlJkk1NTWazmSRJAIBWq/V6vVAMAkJIkuTFxYVUKm1rayvKhPLzDCCEHo/H4XBEo9GZmRmHw0EQRGoGyGhubuY4DmZFMBg0GAwAgPb29tvbWzz0IQAA0Ol0Z2dnPxo6mUxSFBUIBI6OjoxGI6rK6upqPB7/WCI8qcLCQrfbbbVafT5fNBplGIZlWYZhnp6eKIpCdiQSeXx8FPyipXK5XNPT05+W6F+QSqVqtbqurs5oNKpUKgBAa2srykBkmyIUCkXxK0VFRcVi4H65XC78cWNjo7u7O5FIoKaIQE5Ozs3NTVlZWXbZVFZWokHeRkvvIZfLsx4dvK95MplEzS+XCPH8/HxwcIDKy7JsTU1NV1cXCiWTSavVGgwGmVfKy8u9Xi8AAG2Z3Nzcbwl0dHRsb28LTZlM5vP50OnlOK6+vv76+vr8/Nxms42Pj/8tIxylUils88PDw9HRUTxqMpnwczA0NAQAcLvdguf4+BgAYDQaUVOkBjgGg0Gj0eCe/f39xcXFlPnhs0ypQQYB8L6meXl5gmdkZOTu7g6P4kcV2X/bRaKQJNnZ2YnsSCRis9l+LQOBpaWlgoICZG9tba2vr4Nv8AMBtVo9OzsrNO12O8uyvyAAsUUYHBxsaWlBfoqinE7nLwgQWNEIgvB4PFKpFIVWVlZ2d3f/tcjwc9E0Gs3Y2JgQPT09zVxkfAt+lQGBzdHlcqUcjvQMBM+LgFarzZgHgQ0hk8mWl5e/2f9FYGJi4qt+PM9fXV0BAC4vL4eHh09OTpDfZDLZ7XbwHdCN0d/fL3oXWSwW9EhpbGw0m807OztCiOf5vr4+s9nc29vr9/tT7iLhi/YmEI1GGxoa0gWyYG9vD7/s3q7r/Pz8zc1NvV7PMEw8Hgc/IZFI0DTNsmw4HA6FQnNzc/g2/fgeVFdXr62tWSyWWCw2Pz+v0+nCGBzHURQVFiMWi6Wr1tbWfqqBwOTkJMgKhUJRUVGh1WpNJpPFYgkEAmjAl3cR3g9C6HQ6FxYWIITorSi8IXA75bekpEQiEf84pgr8On8A7HMUICL/Kv8AAAAASUVORK5CYII=',
           'Skywork': 'data:image/png+xml;base64,iVBORw0KGgoAAAANSUhEUgAAAB0AAAAcCAYAAACdz7SqAAACMUlEQVR4nL2W21XbQBRF9524AKeCuIPYoYCI/wCmgGBRAVABuALoAAUKsAnwjVOBnA5cggqIdbJGtllYNmgksnK+9Jg7+87jPowt6sdqz+fEOL4CXUTHf5cxNZiRc3d/awkNZeUP+0c6EVwA7QrbGWLYBN56+bI30LVEHGjbMVvsQF251cP+QJeEA/0WDX/emN+RZtu7910xxnWoUS7OHm/tioZqLdHnQR4amYzjx8TGTYFerWKVVJ+NGTNnHI4Tm/JOtXAcoCDg7jix2XuBXi0TkZoClUbAAShahlgG8uPuwE2w3lYnbe9IrzLNmC6BWQnWB11Xx7IScMMy3L1psshE2yaeFMmhUhaDnlDaLUPfMm7Pc576sdYvmvUysN0wMJ0y2Bn8qjL6B+A2aITSYtecHCEx1/kjRr4QlMCzJTgLmQPy0wJ6n9jY39AqCxPduRht/qgDthO/2uIi5cZxgKcgIl8UtoCnYGcBM7R9qSygD4lNBMNAcLx/pM20ab0EFADOo+eQebixi1Cwr7fbwTtXoKo5Pq3FqQd/cPRCzlhGtHGxCrlx7c5hpW+xInL6Znx+URCmEr9xTPyRUJbSwSILvSUNX4XWltJzUEBRt0P7v0Av+7jWIzWS0kvQaeDgBPuSNYcuUpoHhvZVs6LilLvBekA9FT1xsOxsVeJcA6CvGmkNYAY6xnrPoVQfWnirH4GjJ94A21kLo+a3t1gxEWiwXPUqUXinfLsyxnqbsQz8BQY44gm2Y+sjAAAAAElFTkSuQmCC',
@@ -520,6 +530,65 @@
     search.addEventListener('input', filter);
 
     document.getElementById('reset').addEventListener('click', () => { search.value = ''; filter(); });
+
+    // Keyboard Navigation
+    document.addEventListener('keydown', (e) => {
+      // If searching, allow ESC to blur or DOWN to start navigation
+      if (document.activeElement === search) {
+        if (e.key === 'Escape') search.blur();
+        if (e.key === 'ArrowDown') {
+          search.blur();
+          updateSelection(0);
+          e.preventDefault();
+        }
+        return;
+      }
+
+      const cards = document.querySelectorAll('.card');
+      if (!cards.length) return;
+
+      // Calculate grid columns
+      const gridStyle = window.getComputedStyle(grid);
+      const columns = gridStyle.getPropertyValue('grid-template-columns').split(' ').length;
+
+      if (e.key === 'ArrowRight') {
+        updateSelection(Math.min(cards.length - 1, selectedIndex + 1));
+        e.preventDefault();
+      } else if (e.key === 'ArrowLeft') {
+        updateSelection(Math.max(0, selectedIndex - 1));
+        e.preventDefault();
+      } else if (e.key === 'ArrowDown') {
+        if (selectedIndex === -1) updateSelection(0);
+        else updateSelection(Math.min(cards.length - 1, selectedIndex + columns));
+        e.preventDefault();
+      } else if (e.key === 'ArrowUp') {
+        if (selectedIndex === -1) return;
+        const next = selectedIndex - columns;
+        if (next < 0) {
+          selectedIndex = -1;
+          cards.forEach(c => c.classList.remove('selected'));
+          search.focus();
+        } else {
+          updateSelection(next);
+        }
+        e.preventDefault();
+      } else if (e.key === 'Enter' && selectedIndex !== -1) {
+        cards[selectedIndex].click();
+      } else if (e.key === '/') {
+        e.preventDefault();
+        search.focus();
+      }
+    });
+
+    function updateSelection(index) {
+      const cards = document.querySelectorAll('.card');
+      cards.forEach(c => c.classList.remove('selected'));
+      selectedIndex = index;
+      if (cards[selectedIndex]) {
+        cards[selectedIndex].classList.add('selected');
+        cards[selectedIndex].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      }
+    }
 
     // Theme toggle
     const root = document.documentElement;
